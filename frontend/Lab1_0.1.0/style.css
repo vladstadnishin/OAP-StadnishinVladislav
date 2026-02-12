@@ -1,0 +1,61 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 20px;
+}
+
+.container {
+  display: flex;
+  gap: 30px;
+}
+
+form {
+  width: 300px;
+}
+
+.field {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+input, select {
+  padding: 6px;
+  font-size: 14px;
+}
+
+.error-text {
+  color: red;
+  font-size: 12px;
+  height: 14px;
+}
+
+.invalid {
+  border: 2px solid red;
+}
+
+.buttons {
+  display: flex;
+  gap: 10px;
+}
+
+table {
+  border-collapse: collapse;
+  min-width: 500px;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 6px 10px;
+}
+
+button {
+  cursor: pointer;
+}
