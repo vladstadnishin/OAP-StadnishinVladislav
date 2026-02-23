@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Кабінет студента</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+
+<h1>Кабінет студента: перелік дисциплін</h1>
+
+<div class="container">
+  <form id="createForm">
+
+        <!--Дисципліна-->
+    <div class="field">
+      <label for="nameInput">Назва дисципліни</label>
+      <input id="nameInput" type="text" />
+      <p class="error-text" id="nameError"></p>
+    </div>
+
+      <!--Викладач-->
+    <div class="field">
+      <label for="teacherInput">Викладач</label>
+      <input id="teacherInput" type="text" />
+      <p class="error-text" id="teacherError"></p>
+    </div>
+
+      <!--Курс-->
+    <div class="field">
+      <label for="courseSelect">Курс</label>
+      <select id="courseSelect">
+        <option value="">Оберіть курс</option>
+        <option value="1">1 курс</option>
+        <option value="2">2 курс</option>
+        <option value="3">3 курс</option>
+        <option value="4">4 курс</option>
+      </select>
+      <p class="error-text" id="courseError"></p>
+    </div>
+         <!--Пріорітет-->
+    <div class="field">
+  <label for="prioritySelect">Пріоритет</label>
+  <select id="prioritySelect">
+    <option value="">Оберіть пріоритет</option>
+    <option value="Низький">Низький</option>
+    <option value="Середній">Середній</option>
+    <option value="Високий">Високий</option>
+  </select>
+  <p class="error-text" id="priorityError"></p>
+    </div>
+
+     <!--Запис-->
+    <div class="field">
+      <label for="noteInput">Запис</label>
+      <textarea id="noteInput" rows="3"></textarea>
+      <p class="error-text" id="noteError"></p>
+    </div>
+
+    <div class="buttons">
+      <button type="submit">Додати</button>
+      <button type="button" id="resetBtn">Очистити</button>
+    </div>
+  </form>
+
+  <div class="list">
+
+    <!--Фільтри-->
+    <div class="filters">
+  <select id="sortDate">
+    <option value="new">Спочатку нові</option>
+    <option value="old">Спочатку старі</option>
+  </select>
+
+  <select id="filterPriority">
+    <option value="">Усі пріоритети</option>
+    <option value="Високий">Високий</option>
+    <option value="Середній">Середній</option>
+    <option value="Низький">Низький</option>
+  </select>
+    </div>
+
+    <!--Таблиця-->
+    <table>
+      <thead>
+        <tr>
+          <th>Назва</th>
+          <th>Викладач</th>
+          <th>Курс</th>
+          <th>Пріоритет</th>
+          <th>Запис</th>
+          <th>Створено</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+</body>
+</html>
