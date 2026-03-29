@@ -1,11 +1,12 @@
+const API_URL = "http://localhost:3000/api/personal-notes";
+const USERS_API_URL = "http://localhost:3000/api/users";
+let currentUserId = localStorage.getItem("currentUserId") || "demo-user";
+
 let items = JSON.parse(localStorage.getItem("items")) || [];
 
 items.forEach(item => {
   item.createdAt = new Date(item.createdAt);
 });
-
-let nextId =
-  items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
 
 let editId = null;
 
@@ -13,7 +14,6 @@ function saveToLocalStorage() {
   localStorage.setItem("items", JSON.stringify(items));
 }
 
-// поля і не поля і 2 фільтри знизу
 const form = document.getElementById("createForm");
 const resetBtn = document.getElementById("resetBtn");
 const tableBody = document.getElementById("tableBody");
@@ -25,7 +25,12 @@ const noteInput = document.getElementById("noteInput");
 const sortDate = document.getElementById("sortDate");
 const filterPriority = document.getElementById("filterPriority");
 
-// помилки
+const userForm = document.getElementById("userForm");
+const openMenuBtn = document.getElementById("openMenuBtn");
+const menu = document.getElementById("menu");
+const usernameInput = document.getElementById("username");
+const emailInput = document.getElementById("email");
+
 const errors = {
   name: document.getElementById("nameError"),
   teacher: document.getElementById("teacherError"),
@@ -33,6 +38,78 @@ const errors = {
   priority: document.getElementById("priorityError"),
   note: document.getElementById("noteError")
 };
+
+async function syncToServer(item) {
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      userId: currentUserId,
+      title: item.name,
+      content: JSON.stringify({
+        note: item.note,
+        teacher: item.teacher,
+        course: item.course,
+        priority: item.priority
+      }),
+      teacher: item.teacher,
+      course: item.course,
+      priority: item.priority
+    })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data?.error?.message || "Не вдалося зберегти запис на сервері");
+  }
+
+  return data;
+}
+
+async function tryLoadFromServer() {
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+
+    if (!res.ok || !Array.isArray(data.items)) {
+      throw new Error("Не вдалося завантажити записи");
+    }
+
+    const existingIds = new Set(items.map(item => String(item.id)));
+
+    data.items.forEach(i => {
+      if (existingIds.has(String(i.id))) {
+        return;
+      }
+
+      let parsedContent = {};
+
+      try {
+        parsedContent = JSON.parse(i.content);
+      } catch {
+        parsedContent = { note: i.content };
+      }
+
+      items.push({
+        id: i.id,
+        name: i.title,
+        teacher: parsedContent.teacher || i.teacher || "",
+        course: parsedContent.course || i.course || "",
+        priority: parsedContent.priority || i.priority || "",
+        note: parsedContent.note || i.content || "",
+        createdAt: new Date(i.createdAt)
+      });
+    });
+
+    saveToLocalStorage();
+    render();
+  } catch {
+    console.log("Server not running, using localStorage");
+  }
+}
 
 function readForm() {
   return {
@@ -76,44 +153,68 @@ function validate(data) {
   return valid;
 }
 
-// помилкаа
 function showError(input, errorElem, message) {
   input.classList.add("invalid");
   errorElem.textContent = message;
 }
 
-// очищення помилки
 function clearErrors() {
-  document.querySelectorAll(".invalid").forEach(el =>
-    el.classList.remove("invalid")
-  );
-
-  Object.values(errors).forEach(e => (e.textContent = ""));
+  document.querySelectorAll(".invalid").forEach(el => el.classList.remove("invalid"));
+  Object.values(errors).forEach(e => {
+    e.textContent = "";
+  });
 }
 
-// Записи
-function saveItem(data) {
+async function saveItem(data) {
   if (editId === null) {
-    // створити
-    items.push({
-      id: nextId++,
+    const localItem = {
+      id: Date.now().toString(),
       ...data,
       createdAt: new Date()
-    });
-  } else {
-    // оновити
-    const item = items.find(i => i.id === editId);
-    Object.assign(item, data);
-    editId = null;
+    };
+
+    items.push(localItem);
+    saveToLocalStorage();
+    render();
+
+    try {
+      const savedItem = await syncToServer(localItem);
+      localItem.id = savedItem.id;
+      localItem.createdAt = new Date(savedItem.createdAt);
+      saveToLocalStorage();
+      render();
+    } catch (e) {
+      console.error(e);
+      alert(e.message || "Не вдалося зберегти запис на сервері");
+    }
+
+    return;
   }
 
+  const index = items.findIndex(i => i.id === editId);
+  if (index !== -1) {
+    items[index] = {
+      ...items[index],
+      ...data
+    };
+  }
+  editId = null;
   saveToLocalStorage();
+  render();
 }
-    // видалити
-function deleteItem(id) {
+
+async function deleteItem(id) {
   items = items.filter(i => i.id !== id);
   saveToLocalStorage();
   render();
+
+  try {
+    await fetch(`${API_URL}/${id}`, {
+      method: "DELETE"
+    });
+  } catch {
+    console.log("Server not available");
+  }
 }
 
 function startEdit(item) {
@@ -122,7 +223,6 @@ function startEdit(item) {
   courseSelect.value = item.course;
   prioritySelect.value = item.priority;
   noteInput.value = item.note;
-
   editId = item.id;
 }
 
@@ -130,25 +230,20 @@ function formatDate(date) {
   return date.toLocaleString("uk-UA");
 }
 
- // RENDER
 function render() {
   tableBody.innerHTML = "";
 
   let filteredItems = [...items];
 
   if (filterPriority.value) {
-    filteredItems = filteredItems.filter(
-      i => i.priority === filterPriority.value
-    );
+    filteredItems = filteredItems.filter(i => i.priority === filterPriority.value);
   }
 
   filteredItems.sort((a, b) =>
-    sortDate.value === "new"
-      ? b.createdAt - a.createdAt
-      : a.createdAt - b.createdAt
+    sortDate.value === "new" ? b.createdAt - a.createdAt : a.createdAt - b.createdAt
   );
 
-  for (let item of filteredItems) {
+  for (const item of filteredItems) {
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
@@ -171,26 +266,69 @@ function render() {
   }
 }
 
-form.onsubmit = (e) => {
-  e.preventDefault();
-
-  const data = readForm();
-  if (!validate(data)) return;
-
-  saveItem(data);
-  render();
-  clearForm();
-};
-
-resetBtn.onclick = clearForm;
-
-sortDate.onchange = render;
-filterPriority.onchange = render;
-
 function clearForm() {
   form.reset();
   clearErrors();
   editId = null;
 }
 
+function toggleUserMenu() {
+  menu.classList.toggle("hidden");
+}
+
+openMenuBtn.addEventListener("click", toggleUserMenu);
+
+userForm.addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const name = usernameInput.value.trim();
+  const email = emailInput.value.trim();
+
+  if (!name || !email) {
+    alert("Введи ім'я та email");
+    return;
+  }
+
+  try {
+    const res = await fetch(USERS_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ name, email })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data?.error?.message || "Не вдалося створити користувача");
+    }
+
+    currentUserId = data.id;
+    localStorage.setItem("currentUserId", currentUserId);
+
+    alert("Користувача створено!");
+    userForm.reset();
+    menu.classList.add("hidden");
+  } catch (err) {
+    console.error(err);
+    alert(err.message || "Помилка при відправці");
+  }
+});
+
+form.onsubmit = async e => {
+  e.preventDefault();
+
+  const data = readForm();
+  if (!validate(data)) return;
+
+  await saveItem(data);
+  clearForm();
+};
+
+resetBtn.onclick = clearForm;
+sortDate.onchange = render;
+filterPriority.onchange = render;
+
 render();
+tryLoadFromServer();
