@@ -34,7 +34,7 @@ export class NotesService {
     }
 
     const page = Number(query.page) || 1;          //Пагінація
-    const pageSize = Number(query.pageSize) || 10; //Пагінація
+    const pageSize = Number(query.pageSize) || 10;
 
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
@@ -45,7 +45,6 @@ export class NotesService {
       items,
       total: result.length,
       page,
-      pageSize
     };
 
   }
