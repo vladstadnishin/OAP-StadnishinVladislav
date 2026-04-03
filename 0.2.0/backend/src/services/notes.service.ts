@@ -44,7 +44,7 @@ export class NotesService {
     return {
       items,
       total: result.length,
-      page,
+      page
     };
 
   }
