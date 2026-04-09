@@ -11,7 +11,6 @@ export interface CreatePersonalNoteRequestDto {
 
 export interface UpdatePersonalNoteRequestDto {
   title?: string;
-  content?: string;
   teacher?: string;
   course?: string;
   priority?: Priority;
