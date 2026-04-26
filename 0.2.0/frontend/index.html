@@ -4,107 +4,139 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Кабінет студента</title>
-
   <link rel="stylesheet" href="style.css" />
   <script src="app.js" defer></script>
 </head>
 <body>
+  <main class="page">
+    <header class="page-header">
+      <div>
+        <h1>Кабінет студента</h1>
+      </div>
 
-<h1>Кабінет студента: перелік дисциплін</h1>
+      <div class="user-box">
+        <button type="button" id="userToggleBtn" class="secondary">
+          Користувач
+        </button>
 
-<button id="openMenuBtn" type="button">+</button>
+        <section class="user-panel hidden" id="userPanel">
+          <h2>Користувач</h2>
 
-<div id="menu" class="hidden">
-  <form id="userForm">
-    <h3>Створити користувача</h3>
+          <div class="field">
+            <label for="userNameInput">Ім'я</label>
+            <input id="userNameInput" type="text" />
+            <p class="error-text" id="userNameError"></p>
+          </div>
 
-    <input type="text" id="username" placeholder="Ім'я" required />
-    <input type="email" id="email" placeholder="Email" required />
+          <div class="field">
+            <label for="userEmailInput">Email</label>
+            <input id="userEmailInput" type="email" />
+            <p class="error-text" id="userEmailError"></p>
+          </div>
 
-    <button type="submit">Відправити</button>
-  </form>
-</div>
+          <div class="buttons user-buttons">
+            <button type="button" id="saveUserBtn">Зберегти</button>
+            <button type="button" id="deleteUserBtn" class="delete">Видалити</button>
+            <button type="button" id="closeUserBtn" class="secondary">Закрити</button>
+          </div>
+        </section>
+      </div>
+    </header>
 
-<div class="container">
-  <form id="createForm">
-    <div class="field">
-      <label for="nameInput">Назва дисципліни</label>
-      <input id="nameInput" type="text" />
-      <p class="error-text" id="nameError"></p>
-    </div>
+    <p class="status" id="statusMessage"></p>
 
-    <div class="field">
-      <label for="teacherInput">Викладач</label>
-      <input id="teacherInput" type="text" />
-      <p class="error-text" id="teacherError"></p>
-    </div>
+    <section class="layout">
+      <form id="createForm" class="panel">
+        <h2 id="formTitle">Новий запис</h2>
 
-    <div class="field">
-      <label for="courseSelect">Курс</label>
-      <select id="courseSelect">
-        <option value="">Оберіть курс</option>
-        <option value="1">1 курс</option>
-        <option value="2">2 курс</option>
-        <option value="3">3 курс</option>
-        <option value="4">4 курс</option>
-      </select>
-      <p class="error-text" id="courseError"></p>
-    </div>
+        <div class="field">
+          <label for="nameInput">Назва</label>
+          <input id="nameInput" type="text" />
+          <p class="error-text" id="nameError"></p>
+        </div>
 
-    <div class="field">
-      <label for="prioritySelect">Пріоритет</label>
-      <select id="prioritySelect">
-        <option value="">Оберіть пріоритет</option>
-        <option value="Низький">Низький</option>
-        <option value="Середній">Середній</option>
-        <option value="Високий">Високий</option>
-      </select>
-      <p class="error-text" id="priorityError"></p>
-    </div>
+        <div class="field">
+          <label for="teacherInput">Викладач</label>
+          <input id="teacherInput" type="text" />
+          <p class="error-text" id="teacherError"></p>
+        </div>
 
-    <div class="field">
-      <label for="noteInput">Запис</label>
-      <textarea id="noteInput" rows="3"></textarea>
-      <p class="error-text" id="noteError"></p>
-    </div>
+        <div class="field">
+          <label for="courseSelect">Курс</label>
+          <select id="courseSelect">
+            <option value="">Оберіть курс</option>
+            <option value="1">1 курс</option>
+            <option value="2">2 курс</option>
+            <option value="3">3 курс</option>
+            <option value="4">4 курс</option>
+            <option value="5">5 курс</option>
+            <option value="6">6 курс</option>
+          </select>
+          <p class="error-text" id="courseError"></p>
+        </div>
 
-    <div class="buttons">
-      <button type="submit">Додати</button>
-      <button type="button" id="resetBtn">Очистити</button>
-    </div>
-  </form>
+        <div class="field">
+          <label for="prioritySelect">Пріоритет</label>
+          <select id="prioritySelect">
+            <option value="">Оберіть пріоритет</option>
+            <option value="Низький">Низький</option>
+            <option value="Середній">Середній</option>
+            <option value="Високий">Високий</option>
+          </select>
+          <p class="error-text" id="priorityError"></p>
+        </div>
 
-  <div class="list">
-    <div class="filters">
-      <select id="sortDate">
-        <option value="new">Спочатку нові</option>
-        <option value="old">Спочатку старі</option>
-      </select>
+        <div class="field">
+          <label for="noteInput">Запис</label>
+          <textarea
+            id="noteInput"
+            rows="4"
+            placeholder="Коротка нотатка щодо дисципліни"
+          ></textarea>
+          <p class="error-text" id="noteError"></p>
+        </div>
 
-      <select id="filterPriority">
-        <option value="">Усі пріоритети</option>
-        <option value="Високий">Високий</option>
-        <option value="Середній">Середній</option>
-        <option value="Низький">Низький</option>
-      </select>
-    </div>
+        <div class="buttons">
+          <button type="submit" id="submitBtn">Додати</button>
+          <button type="button" id="resetBtn" class="secondary">Очистити</button>
+        </div>
+      </form>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Назва</th>
-          <th>Викладач</th>
-          <th>Курс</th>
-          <th>Пріоритет</th>
-          <th>Запис</th>
-          <th>Створено</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
-</div>
+      <section class="panel">
+        <div class="toolbar">
+          <h2>Записи</h2>
 
+          <div class="filters">
+            <select id="sortDate">
+              <option value="desc">Спочатку нові</option>
+              <option value="asc">Спочатку старі</option>
+            </select>
+
+            <select id="filterPriority">
+              <option value="">Усі пріоритети</option>
+              <option value="Високий">Високий</option>
+              <option value="Середній">Середній</option>
+              <option value="Низький">Низький</option>
+            </select>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Назва</th>
+              <th>Викладач</th>
+              <th>Курс</th>
+              <th>Пріоритет</th>
+              <th>Запис</th>
+              <th>Створено</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </section>
+    </section>
+  </main>
 </body>
 </html>

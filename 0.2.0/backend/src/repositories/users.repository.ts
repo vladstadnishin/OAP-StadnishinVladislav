@@ -1,29 +1,35 @@
+import type { UserDto } from "../dtos/users.dtos";
 
-import { UserResponseDto } from "../dtos/users.dto";
-
-export class UsersRepository {
-
-  private users: UserResponseDto[] = [
-    {
-      id: "demo-user",
-      name: "Demo User",
-      email: "demo@test.com"
-    }
-  ];
-
-  findAll() {
-    return this.users;
-  }
-
-  findById(id: string) {
-    return this.users.find(u => u.id === id);
-  }
-
-  create(user: UserResponseDto) {
-    this.users.push(user);
-    return user;
-  }
-
+interface UsersRepository {
+  findAll(): UserDto[];
+  findById(id: string): UserDto | undefined;
+  create(item: UserDto): UserDto;
+  update(id: string, item: UserDto): UserDto;
+  delete(id: string): boolean;
 }
 
-export const usersRepository = new UsersRepository();
+export function createUsersRepository(): UsersRepository {
+  const items = new Map<string, UserDto>();
+
+  return {
+    findAll() {
+      return [...items.values()];
+    },
+    findById(id) {
+      return items.get(id);
+    },
+    create(item) {
+      items.set(item.id, item);
+      return item;
+    },
+    update(id, item) {
+      items.set(id, item);
+      return item;
+    },
+    delete(id) {
+      return items.delete(id);
+    }
+  };
+}
+
+export type { UsersRepository };

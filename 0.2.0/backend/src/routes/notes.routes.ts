@@ -1,13 +1,43 @@
-
 import { Router } from "express";
-import { notesController } from "../controllers/notes.controller";
+import {
+  createNoteRequestSchema,
+  noteParamsSchema,
+  notesQuerySchema,
+  patchNoteRequestSchema,
+  updateNoteRequestSchema
+} from "../dtos/notes.dtos";
+import type { NotesController } from "../controllers/notes.controllers";
+import { validateRequest } from "../middleware/validation.middleware";
 
-const router = Router();
+export function createNotesRouter(controller: NotesController): Router {
+  const router = Router();
 
-router.get("/", notesController.getAll);             //CRUD
-router.get("/:id", notesController.getById);
-router.post("/", notesController.create);
-router.put("/:id", notesController.update);
-router.delete("/:id", notesController.delete);
+  router.get("/", validateRequest({ query: notesQuerySchema }), controller.getList);
+  router.get(
+    "/:id",
+    validateRequest({ params: noteParamsSchema }),
+    controller.getById
+  );
+  router.post(
+    "/",
+    validateRequest({ body: createNoteRequestSchema }),
+    controller.create
+  );
+  router.put(
+    "/:id",
+    validateRequest({ params: noteParamsSchema, body: updateNoteRequestSchema }),
+    controller.update
+  );
+  router.patch(
+    "/:id",
+    validateRequest({ params: noteParamsSchema, body: patchNoteRequestSchema }),
+    controller.patch
+  );
+  router.delete(
+    "/:id",
+    validateRequest({ params: noteParamsSchema }),
+    controller.remove
+  );
 
-export default router;
+  return router;
+}
