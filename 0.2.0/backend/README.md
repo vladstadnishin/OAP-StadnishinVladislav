@@ -1,27 +1,16 @@
-# Backend
-
 ## Запуск
 
-```bash
-cd backend
-npm install
-npm start
-```
-
-Сервер запускається на `http://localhost:3000`.
-
-Фронтенд відкривай окремо з [frontend/index.html](/E:/учёба/Универ/ОАП/workspace/0.1.0/frontend/index.html) через Windows Explorer.
+Сервер запускається на http://localhost:3000.
 
 ## Сутності
 
-- `GET/POST/PUT/PATCH/DELETE /api/names`
-- `GET/POST/PUT/PATCH/DELETE /api/teachers`
-- `GET/POST/PUT/PATCH/DELETE /api/notes`
-- `GET/POST/PUT/PATCH/DELETE /api/users`
+- GET/POST/PUT/PATCH/DELETE /api/names
+- GET/POST/PUT/PATCH/DELETE /api/teachers
+- GET/POST/PUT/PATCH/DELETE /api/notes
+- GET/POST/PUT/PATCH/DELETE /api/users
 
 ## Формат списку для names
 
-```json
 {
   "items": [
     {
@@ -39,9 +28,8 @@ npm start
   "page": 1,
   "pageSize": 10
 }
-```
 
 ## Пошук по id
 
-- `GET http://localhost:3000/api/notes/7c204a27-3aa7-48b0-998f-caa1d4ead146`
-- `GET http://localhost:3000/api/users/5c60517d-9464-464a-a3c0-826dc2e24b9d`
+- GET http://localhost:3000/api/names
+- GET http://localhost:3000/api/users
