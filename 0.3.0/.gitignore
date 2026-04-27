@@ -1,0 +1,9 @@
+# Runtime dependencies are local-only.
+backend/node_modules/
+
+# SQLite files are generated locally and must not be committed.
+backend/data/
+backend/data/*.db
+backend/data/*.db-journal
+backend/data/*.db-shm
+backend/data/*.db-wal
