@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Кабінет студента</title>
+  <link rel="stylesheet" href="style.css" />
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <main class="page">
+    <header class="page-header">
+      <div>
+        <h1>Кабінет студента</h1>
+      </div>
+
+      <div class="user-box">
+        <button type="button" id="userToggleBtn" class="secondary">
+          Користувач
+        </button>
+
+        <section class="user-panel hidden" id="userPanel">
+          <h2>Користувач</h2>
+
+          <div class="field">
+            <label for="userNameInput">Ім'я</label>
+            <input id="userNameInput" type="text" />
+            <p class="error-text" id="userNameError"></p>
+          </div>
+
+          <div class="field">
+            <label for="userEmailInput">Email</label>
+            <input id="userEmailInput" type="email" />
+            <p class="error-text" id="userEmailError"></p>
+          </div>
+
+          <div class="field">
+            <label for="loginUserSelect">Існуючий користувач</label>
+            <select id="loginUserSelect">
+              <option value="">Оберіть користувача</option>
+            </select>
+          </div>
+
+          <div class="buttons user-buttons">
+            <button type="button" id="saveUserBtn">Зберегти</button>
+            <button type="button" id="loginUserBtn" class="secondary">Увійти</button>
+            <button type="button" id="logoutUserBtn" class="secondary">Вийти</button>
+            <button type="button" id="deleteUserBtn" class="delete">Видалити</button>
+            <button type="button" id="closeUserBtn" class="secondary">Закрити</button>
+          </div>
+        </section>
+      </div>
+    </header>
+
+    <p class="status" id="statusMessage" aria-live="polite"></p>
+
+    <section class="layout">
+      <form id="createForm" class="panel">
+        <h2 id="formTitle">Новий запис</h2>
+
+        <div class="field">
+          <label for="nameInput">Назва</label>
+          <input id="nameInput" type="text" />
+          <p class="error-text" id="nameError"></p>
+        </div>
+
+        <div class="field">
+          <label for="teacherInput">Викладач</label>
+          <input id="teacherInput" type="text" />
+          <p class="error-text" id="teacherError"></p>
+        </div>
+
+        <div class="field">
+          <label for="courseSelect">Курс</label>
+          <select id="courseSelect">
+            <option value="">Оберіть курс</option>
+            <option value="1">1 курс</option>
+            <option value="2">2 курс</option>
+            <option value="3">3 курс</option>
+            <option value="4">4 курс</option>
+            <option value="5">5 курс</option>
+          </select>
+          <p class="error-text" id="courseError"></p>
+        </div>
+
+        <div class="field">
+          <label for="prioritySelect">Пріоритет</label>
+          <select id="prioritySelect">
+            <option value="">Оберіть пріоритет</option>
+            <option value="Низький">Низький</option>
+            <option value="Середній">Середній</option>
+            <option value="Високий">Високий</option>
+          </select>
+          <p class="error-text" id="priorityError"></p>
+        </div>
+
+        <div class="field">
+          <label for="noteInput">Запис</label>
+          <textarea
+            id="noteInput"
+            rows="4"
+            placeholder="Коротка нотатка щодо дисципліни"
+          ></textarea>
+          <p class="error-text" id="noteError"></p>
+        </div>
+
+        <div class="buttons">
+          <button type="submit" id="submitBtn">Додати</button>
+          <button type="button" id="resetBtn" class="secondary">Очистити</button>
+        </div>
+      </form>
+
+      <section class="panel">
+        <div class="toolbar">
+          <h2>Записи</h2>
+
+          <div class="filters">
+            <select id="sortDate">
+              <option value="desc">Спочатку нові</option>
+              <option value="asc">Спочатку старі</option>
+            </select>
+
+            <select id="filterPriority">
+              <option value="">Усі пріоритети</option>
+              <option value="Високий">Високий</option>
+              <option value="Середній">Середній</option>
+              <option value="Низький">Низький</option>
+            </select>
+          </div>
+        </div>
+
+        <p class="list-status" id="listStatus" aria-live="polite"></p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Назва</th>
+              <th>Викладач</th>
+              <th>Курс</th>
+              <th>Пріоритет</th>
+              <th>Запис</th>
+              <th>Користувач</th>
+              <th>Створено</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+
+        <div class="pagination">
+          <button type="button" id="prevPageBtn" class="secondary">Попередня</button>
+          <span id="pageInfo">Сторінка 1</span>
+          <button type="button" id="nextPageBtn" class="secondary">Наступна</button>
+        </div>
+
+        <section class="details-panel" id="detailsPanel">
+          <div class="details-heading">
+            <h3>Деталі запису</h3>
+            <button type="button" id="closeDetailsBtn" class="secondary">Закрити</button>
+          </div>
+          <p class="list-status" id="detailsStatus" aria-live="polite">Оберіть запис у таблиці.</p>
+          <dl id="detailsList" class="details-list"></dl>
+        </section>
+      </section>
+    </section>
+  </main>
+</body>
+</html>
