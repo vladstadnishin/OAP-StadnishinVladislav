@@ -2,11 +2,16 @@ import { randomUUID } from "node:crypto";
 import type {
   CreateNameRequestDto,
   NameDto,
+  NamePriorityStatDto,
+  NameWithUserDto,
   NamesQueryDto,
+  NamesStatsQueryDto,
   PatchNameRequestDto,
   UpdateNameRequestDto
 } from "../dtos/names.dtos";
 import type { NamesRepository } from "../repositories/names.repository";
+import type { NotesRepository } from "../repositories/notes.repository";
+import type { TeachersRepository } from "../repositories/teachers.repository";
 import type { UsersRepository } from "../repositories/users.repository";
 import { ApiError } from "../middleware/error-handler.middleware";
 
@@ -17,6 +22,16 @@ interface NamesService {
     page: number;
     pageSize: number;
   };
+  getWithUsers(query: NamesQueryDto): {
+    items: NameWithUserDto[];
+    total: number;
+    page: number;
+    pageSize: number;
+  };
+  getPriorityStats(query: NamesStatsQueryDto): {
+    items: NamePriorityStatDto[];
+    total: number;
+  };
   getById(id: string): NameDto;
   create(data: CreateNameRequestDto): NameDto;
   update(id: string, data: UpdateNameRequestDto): NameDto;
@@ -26,9 +41,12 @@ interface NamesService {
 
 export function createNamesService(
   repository: NamesRepository,
-  usersRepository: UsersRepository
-): NamesService {                                                // Перед створенням або оновленням перевірка, що прив'язаний користувач існує
+  usersRepository: UsersRepository,
+  teachersRepository: TeachersRepository,
+  notesRepository: NotesRepository
+): NamesService {
   function ensureUserExists(userId: string): void {
+    // The service performs an explicit FK-friendly check before INSERT/UPDATE.
     if (!usersRepository.findById(userId)) {
       throw new ApiError(400, "VALIDATION_ERROR", "Invalid request body", [
         {
@@ -39,41 +57,63 @@ export function createNamesService(
     }
   }
 
+  function ensureTeacherExists(fullName: string, createdAt: string): void {
+    if (teachersRepository.findByFullName(fullName)) {
+      return;
+    }
+
+    // Teacher rows are auto-created from the main name form so /api/teachers stays in sync.
+    teachersRepository.create({
+      id: randomUUID(),
+      fullName,
+      createdAt
+    });
+  }
+
+  function syncNoteFromName(item: NameDto): void {
+    notesRepository.upsert({
+      id: item.id,
+      userId: item.userId,
+      content: item.note,
+      createdAt: item.createdAt
+    });
+  }
+
   return {
     getList(query) {
-      let items = repository.findAll();                                       // Фільтрація списку через query params
-      if (query.priority) {
-        items = items.filter(item => item.priority === query.priority);
-      }
-
-      if (query.userId) {
-        items = items.filter(item => item.userId === query.userId);
-      }
-
-      items = [...items].sort((left, right) => {                        // Сортування списку за датою створення
-        const leftDate = new Date(left.createdAt).getTime();
-        const rightDate = new Date(right.createdAt).getTime();
-
-        return query.sortDir === "asc"
-          ? leftDate - rightDate
-          : rightDate - leftDate;
-      });
-
-      const total = items.length;
-      const startIndex = (query.page - 1) * query.pageSize;
-
-      return {                                                           // Пагінація, повертає лише потрібний зріз масиву
-        items: items.slice(startIndex, startIndex + query.pageSize),
-        total,
+      // Main paginated list used by the frontend table.
+      return {
+        items: repository.findList(query),
+        total: repository.count(query),
         page: query.page,
         pageSize: query.pageSize
+      };
+    },
+
+    getWithUsers(query) {
+      // JOIN endpoint used to demonstrate linked data in one response.
+      return {
+        items: repository.findWithUsers(query),
+        total: repository.count(query),
+        page: query.page,
+        pageSize: query.pageSize
+      };
+    },
+
+    getPriorityStats(query) {
+      // Aggregation endpoint required for the "excellent" level in the lab.
+      const items = repository.getPriorityStats(query);
+
+      return {
+        items,
+        total: items.reduce((sum, item) => sum + item.total, 0)
       };
     },
 
     getById(id) {
       const item = repository.findById(id);
 
-      if (!item) {                                                   // Єдиний формат 404 для відсутнього ресурсу
+      if (!item) {
         throw new ApiError(404, "NOT_FOUND", "Name not found");
       }
 
@@ -83,7 +123,8 @@ export function createNamesService(
     create(data) {
       ensureUserExists(data.userId);
 
-      const item: NameDto = {                   //створення id
+      // Backend creates id/createdAt so the client cannot spoof server metadata.
+      const item: NameDto = {
         id: randomUUID(),
         userId: data.userId,
         title: data.title,
@@ -95,14 +136,17 @@ export function createNamesService(
       };
 
       repository.create(item);
+      ensureTeacherExists(item.teacher, item.createdAt);
+      syncNoteFromName(item);
       return item;
     },
 
     update(id, data) {
+      // PUT replaces all mutable fields while preserving id/createdAt.
       const existingItem = this.getById(id);
       ensureUserExists(data.userId);
 
-      const item: NameDto = {                       // PUT повністю замінює змінювані поля, але зберігає id і createdAt
+      const item: NameDto = {
         id: existingItem.id,
         userId: data.userId,
         title: data.title,
@@ -114,16 +158,19 @@ export function createNamesService(
       };
 
       repository.update(id, item);
+      ensureTeacherExists(item.teacher, item.createdAt);
+      syncNoteFromName(item);
       return item;
     },
 
     patch(id, data) {
+      // PATCH only changes the fields that arrived in the request body.
       const existingItem = this.getById(id);
       const userId = data.userId ?? existingItem.userId;
 
       ensureUserExists(userId);
 
-      const item: NameDto = {                                  // PATCH оновлює лише ті поля, які прийшли в запиті.
+      const item: NameDto = {
         id: existingItem.id,
         userId,
         title: data.title ?? existingItem.title,
@@ -135,15 +182,18 @@ export function createNamesService(
       };
 
       repository.update(id, item);
+      ensureTeacherExists(item.teacher, item.createdAt);
+      syncNoteFromName(item);
       return item;
     },
 
-    delete(id) {                                                 // Видалення повертає 404, якщо запису не існує.
+    delete(id) {
       if (!repository.findById(id)) {
         throw new ApiError(404, "NOT_FOUND", "Name not found");
       }
 
       repository.delete(id);
+      notesRepository.delete(id);
     }
   };
 }

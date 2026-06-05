@@ -1,0 +1,15 @@
+{
+  "name": "student-cabinet-frontend",
+  "version": "0.4.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "check": "tsc --noEmit",
+    "dev": "tsc --watch",
+    "serve": "npm run build && http-server public -p 5500 -c-1"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "typescript": "^5.8.3"
+  }
+}
